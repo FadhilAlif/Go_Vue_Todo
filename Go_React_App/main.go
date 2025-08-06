@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 
 	// "github.com/gofiber/fiber/v2/middleware/logger"
@@ -104,39 +104,39 @@ func createTodo(c *fiber.Ctx) error {
 
 // PUT /api/todos/:id
 func updateTodo(c *fiber.Ctx) error {
-    id := c.Params("id")
-    todoID, err := uuid.Parse(id)
-    if err != nil {
-        return c.Status(400).JSON(fiber.Map{"error": "Invalid UUID format"})
-    }
+	id := c.Params("id")
+	todoID, err := strconv.Atoi(id)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid ID"})
+	}
 
-    var todo models.Todo
-    if err := database.DB.First(&todo, "id = ?", todoID).Error; err != nil {
-        return c.Status(404).JSON(fiber.Map{"error": "Todo not found"})
-    }
+	var todo models.Todo
+	if err := database.DB.First(&todo, todoID).Error; err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "Todo not found"})
+	}
 
-    if err := c.BodyParser(&todo); err != nil {
-        return c.Status(400).JSON(fiber.Map{"error": "Cannot parse JSON"})
-    }
+	if err := c.BodyParser(&todo); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Cannot parse JSON"})
+	}
 
-    if err := database.DB.Save(&todo).Error; err != nil {
-        return c.Status(500).JSON(fiber.Map{"error": "Failed to update todo"})
-    }
+	if err := database.DB.Save(&todo).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to update todo"})
+	}
 
-    return c.Status(200).JSON(todo)
+	return c.Status(200).JSON(todo)
 }
 
 // DELETE /api/todos/:id
 func deleteTodo(c *fiber.Ctx) error {
-    id := c.Params("id")
-    todoID, err := uuid.Parse(id)
-    if err != nil {
-        return c.Status(400).JSON(fiber.Map{"error": "Invalid UUID format"})
-    }
+	id := c.Params("id")
+	todoID, err := strconv.Atoi(id)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid ID"})
+	}
 
-    if err := database.DB.Delete(&models.Todo{}, "id = ?", todoID).Error; err != nil {
-        return c.Status(500).JSON(fiber.Map{"error": "Failed to delete todo"})
-    }
+	if err := database.DB.Delete(&models.Todo{}, todoID).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to delete todo"})
+	}
 
-    return c.SendStatus(204)
+	return c.SendStatus(204)
 }
